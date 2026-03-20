@@ -125,7 +125,7 @@ body{background:#1a1a2e;font-family:monospace;min-height:100vh;display:flex;just
   <div id="battle">
     <div id="battle-scene">
       <!-- cenario-batalha: nome do arquivo conforme está no GitHub -->
-      <img id="battle-bg" src="cenario-batalha.png" alt="cenário batalha" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;" />
+      <img id="battle-bg" src="cenario-batalha.webp" alt="cenário batalha" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;" />
       <div id="enemy-hud">
         <div id="enemy-name">???</div>
         <div id="enemy-hp-label">HP</div>
@@ -279,7 +279,7 @@ function getTile(c,r){
 // cenario-escritorio: nome exato do arquivo no GitHub (case-sensitive!)
 // Se precisar trocar, altere aqui:
 const IMG_ESCRITORIO = new Image();
-IMG_ESCRITORIO.src = 'cenario-escritorio.png';
+IMG_ESCRITORIO.src = 'cenario-escritorio.webp';
 // Força re-render quando a imagem terminar de carregar
 IMG_ESCRITORIO.onload = () => { if(!inBattle && !inDialog && charData) { const cv=document.getElementById('game-canvas'); drawMap(cv.getContext('2d'),playerPos.x,playerPos.y); } };
 
@@ -417,7 +417,7 @@ function showDialog(name,lines,onDone){
 }
 
 // ── BATTLE BG: usa <img id="battle-bg"> — não precisa mais de canvas ──
-// O elemento já está no HTML como <img src="cenario-batalha.png">
+// O elemento já está no HTML como <img src="cenario-batalha.webp">
 function drawBattleBG(){ /* substituído por <img id="battle-bg"> no HTML */ }
 
 // ── BATTLE ─────────────────────────────────────────────
