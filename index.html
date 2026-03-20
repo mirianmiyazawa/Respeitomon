@@ -2,115 +2,130 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>RESPEITOMON — CIPA Quiz RPG</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{width:100%;height:100%;background:#1a1a2e;display:flex;justify-content:center;align-items:center;font-family:monospace;overflow:hidden}
-#app{width:480px;max-width:100vw;background:#0d0d1a;border:2px solid #534AB7;position:relative;overflow:hidden}
-
-#game-canvas{display:block;width:480px;height:320px;image-rendering:pixelated}
-
-#dialog{position:absolute;bottom:0;left:0;right:0;background:#1a1a2e;border-top:2px solid #534AB7;padding:10px 14px 8px;display:none;z-index:20}
+html{background:#1a1a2e}
+body{background:#1a1a2e;font-family:monospace;min-height:100vh;display:flex;justify-content:center;align-items:flex-start;padding:12px 0}
+#app{width:480px;max-width:100vw;background:#0d0d1a;border:2px solid #534AB7;position:relative;overflow:hidden;height:560px}
+.screen{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;overflow-y:auto;z-index:5}
+.screen.active{display:flex}
+#screen-city{justify-content:center;padding:30px 20px;gap:14px}
+#screen-city .logo{font-size:18px;color:#534AB7;letter-spacing:3px;text-align:center}
+#screen-city .sub{font-size:9px;color:#555;letter-spacing:1px;text-align:center}
+#screen-city h2{font-size:12px;color:#AFA9EC;letter-spacing:2px;text-align:center;margin-top:6px}
+.city-btn{width:100%;background:#1a1a2e;border:1px solid #2a2a4a;border-radius:8px;padding:14px 16px;cursor:pointer;text-align:center;transition:border-color .15s;color:#eee;font-family:monospace}
+.city-btn:hover{border-color:#534AB7}
+.city-btn .city-name{font-size:14px;color:#AFA9EC;letter-spacing:2px;display:block;margin-bottom:6px}
+.city-btn .city-members{font-size:9px;color:#555;line-height:1.7}
+#screen-char{padding:14px;gap:0}
+#screen-char .back-btn{align-self:flex-start;background:none;border:none;color:#534AB7;font-family:monospace;font-size:10px;cursor:pointer;margin-bottom:8px;letter-spacing:1px}
+#screen-char .logo{font-size:13px;color:#534AB7;letter-spacing:2px;text-align:center;width:100%;margin-bottom:2px}
+#screen-char .sub{font-size:9px;color:#555;letter-spacing:1px;text-align:center;width:100%;margin-bottom:10px}
+#char-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%}
+.char-card{background:#1a1a2e;border:1px solid #2a2a4a;border-radius:6px;padding:10px 6px;cursor:pointer;text-align:center;transition:border-color .15s}
+.char-card:hover{border-color:#534AB7}
+/* char-card usa <img> agora — não canvas */
+.char-card img{display:block;margin:0 auto 5px;width:60px;height:80px;object-fit:contain;object-position:center bottom;image-rendering:pixelated}
+.char-card .cname{font-size:9px;color:#AFA9EC;word-break:break-word;line-height:1.4}
+.char-card .crole{font-size:8px;color:#444;margin-top:2px}
+#statusbar{position:absolute;top:0;left:0;right:0;height:20px;background:#0d0d1a;border-bottom:1px solid #1a1a3a;display:none;align-items:center;padding:0 8px;gap:8px;z-index:10}
+#sb-char{font-size:8px;color:#AFA9EC;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px}
+#sb-score{font-size:8px;color:#534AB7;margin-left:auto;white-space:nowrap}
+#sb-enc{font-size:8px;color:#555;white-space:nowrap}
+#game-canvas{display:none;width:480px;height:340px;image-rendering:pixelated;margin-top:20px}
+#dialog{position:absolute;bottom:0;left:0;right:0;background:#0d0d1a;border-top:2px solid #534AB7;padding:10px 14px 8px;display:none;z-index:20}
 #dialog-name{font-size:10px;color:#AFA9EC;margin-bottom:3px;letter-spacing:1px;text-transform:uppercase}
-#dialog-text{font-size:11px;color:#eee;line-height:1.6;min-height:32px}
+#dialog-text{font-size:11px;color:#eee;line-height:1.6;min-height:36px}
 #dialog-continue{font-size:10px;color:#534AB7;text-align:right;margin-top:4px;animation:blink 1s infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
-
 #battle{position:absolute;inset:0;display:none;flex-direction:column;background:#0d0d1a;z-index:15}
-#battle-scene{position:relative;height:190px;background:linear-gradient(180deg,#0d1b3e 0%,#0d1b3e 60%,#1a3a1a 60%,#1a3a1a 100%);overflow:hidden;flex-shrink:0}
-#battle-scene::before{content:'';position:absolute;bottom:30px;left:30px;width:90px;height:18px;background:#2a5a2a;border-radius:50%;opacity:.7}
-#battle-scene::after{content:'';position:absolute;bottom:30px;right:30px;width:70px;height:14px;background:#2a5a2a;border-radius:50%;opacity:.7}
-
-#enemy-hud{position:absolute;top:10px;left:10px;background:#1a1a2e;border:1px solid #534AB7;padding:6px 10px;border-radius:4px;min-width:160px}
-#enemy-name{font-size:10px;color:#AFA9EC;letter-spacing:1px}
-#enemy-hp-label{font-size:9px;color:#888;margin:2px 0 1px}
-#enemy-hp-bar{height:6px;background:#333;border-radius:3px;overflow:hidden}
+#battle-scene{position:relative;height:195px;overflow:hidden;flex-shrink:0}
+#battle-bg{position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated}
+#enemy-hud{position:absolute;top:8px;left:8px;background:#0d0d1aee;border:1px solid #534AB7;padding:5px 8px;border-radius:4px;min-width:148px;z-index:2}
+#enemy-name{font-size:9px;color:#AFA9EC;letter-spacing:1px}
+#enemy-hp-label{font-size:8px;color:#888;margin:2px 0 1px}
+#enemy-hp-bar{height:5px;background:#333;border-radius:3px;overflow:hidden}
 #enemy-hp-fill{height:100%;background:#E24B4A;transition:width .5s;border-radius:3px}
-#enemy-level{font-size:9px;color:#534AB7;margin-top:2px}
-
-#player-hud{position:absolute;bottom:10px;right:10px;background:#1a1a2e;border:1px solid #534AB7;padding:6px 10px;border-radius:4px;min-width:150px;text-align:right}
-#player-name{font-size:10px;color:#AFA9EC;letter-spacing:1px}
-#player-hp-label{font-size:9px;color:#888;margin:2px 0 1px;text-align:right}
-#player-hp-bar{height:6px;background:#333;border-radius:3px;overflow:hidden}
+#enemy-level{font-size:8px;color:#534AB7;margin-top:2px}
+#player-hud{position:absolute;bottom:8px;right:8px;background:#0d0d1aee;border:1px solid #534AB7;padding:5px 8px;border-radius:4px;min-width:130px;text-align:right;z-index:2}
+#player-name{font-size:8px;color:#AFA9EC;word-break:break-word;line-height:1.3}
+#player-hp-label{font-size:8px;color:#888;margin:2px 0 1px}
+#player-hp-bar{height:5px;background:#333;border-radius:3px;overflow:hidden}
 #player-hp-fill{height:100%;background:#3B6D11;transition:width .5s;border-radius:3px}
-
-#enemy-sprite{position:absolute;right:60px;bottom:42px;image-rendering:pixelated;animation:float 2s ease-in-out infinite}
-#player-sprite{position:absolute;left:40px;bottom:38px;image-rendering:pixelated}
-@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
-@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
-@keyframes hit-flash{0%,100%{opacity:1}50%{opacity:.2}}
+#enemy-sprite{position:absolute;right:55px;bottom:38px;image-rendering:pixelated;animation:float 2s ease-in-out infinite;z-index:2}
+#player-sprite{position:absolute;left:35px;bottom:34px;width:64px;height:80px;object-fit:contain;object-position:center bottom;image-rendering:pixelated;z-index:2;animation:none}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+@keyframes hitflash{0%,100%{opacity:1}50%{opacity:.15}}
 .shake{animation:shake .3s ease!important}
-.hit{animation:hit-flash .3s ease!important}
-
-#battle-ui{flex:1;background:#1a1a2e;border-top:2px solid #534AB7;display:flex;flex-direction:column}
-#battle-msg{padding:8px 12px;font-size:11px;color:#eee;line-height:1.5;min-height:44px;border-bottom:1px solid #2a2a4a}
+.hit{animation:hitflash .3s ease!important}
+#battle-ui{flex:1;background:#0d0d1a;border-top:2px solid #534AB7;display:flex;flex-direction:column;min-height:0}
+#battle-msg{padding:8px 12px;font-size:11px;color:#eee;line-height:1.5;min-height:52px;border-bottom:1px solid #1a1a3a;white-space:pre-line}
+#battle-continue{font-size:9px;color:#534AB7;text-align:right;padding:3px 12px;animation:blink 1s infinite;display:none}
 #battle-actions{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:#534AB7;flex:1}
-.action-btn{background:#1a1a2e;border:none;color:#ccc;font-family:monospace;font-size:10px;padding:8px 10px;cursor:pointer;text-align:left;line-height:1.5;transition:background .1s}
-.action-btn:hover:not(:disabled){background:#2a2a4a;color:#fff}
-.action-btn:disabled{opacity:.4;cursor:default}
-.action-btn .skill-name{display:block;font-size:10px;color:#AFA9EC;font-weight:bold;margin-bottom:2px}
-.action-btn .skill-desc{display:block;font-size:9px;color:#777;line-height:1.4}
-
-#char-select{position:absolute;inset:0;background:#0d0d1a;display:flex;flex-direction:column;align-items:center;padding:20px 16px;z-index:30}
-#char-select h2{font-size:13px;color:#AFA9EC;letter-spacing:2px;margin-bottom:4px;text-transform:uppercase}
-#char-select p{font-size:9px;color:#555;margin-bottom:14px;letter-spacing:1px}
-#char-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%}
-.char-card{background:#1a1a2e;border:1px solid #2a2a4a;border-radius:6px;padding:10px;cursor:pointer;text-align:center;transition:border-color .15s}
-.char-card:hover{border-color:#534AB7}
-.char-card canvas{display:block;margin:0 auto 6px;image-rendering:pixelated}
-.char-card .cname{font-size:10px;color:#AFA9EC;letter-spacing:1px}
-.char-card .crole{font-size:9px;color:#555;margin-top:2px}
-#title-logo{font-size:16px;color:#534AB7;letter-spacing:3px;margin-bottom:2px}
-
-#result-screen{position:absolute;inset:0;background:#0d0d1a;display:none;flex-direction:column;align-items:center;justify-content:center;padding:20px;text-align:center;z-index:25}
-#result-screen h2{font-size:14px;color:#AFA9EC;letter-spacing:2px;margin-bottom:8px}
-#result-score{font-size:40px;color:#534AB7;font-weight:bold}
-#result-rank{font-size:12px;color:#eee;margin:6px 0 12px;line-height:1.6}
-#result-review{width:100%;text-align:left;max-height:120px;overflow-y:auto;margin-bottom:12px}
-.review-row{font-size:9px;color:#888;padding:3px 0;border-bottom:1px solid #1a1a2e;line-height:1.5}
-.review-row.ok{color:#97C459}
-.review-row.bad{color:#E24B4A}
+.action-btn{background:#0d0d1a;border:none;color:#ccc;font-family:monospace;font-size:9px;padding:7px 8px;cursor:pointer;text-align:left;line-height:1.5;transition:background .1s}
+.action-btn:hover:not(:disabled){background:#1a1a3a;color:#fff}
+.action-btn:disabled{opacity:.35;cursor:default}
+.action-btn .skill-name{display:block;font-size:9px;color:#AFA9EC;font-weight:bold;margin-bottom:2px}
+.action-btn .skill-desc{display:block;font-size:8px;color:#555;line-height:1.4}
+#screen-result{position:absolute;inset:0;background:#0d0d1a;display:none;flex-direction:column;align-items:center;justify-content:center;padding:20px;text-align:center;z-index:25;overflow-y:auto}
+#screen-result h2{font-size:13px;color:#AFA9EC;letter-spacing:2px;margin-bottom:6px}
+#result-score{font-size:42px;color:#534AB7;font-weight:bold;line-height:1}
+#result-rank{font-size:11px;color:#eee;margin:8px 0 12px;line-height:1.7;white-space:pre-line}
+#result-review{width:100%;text-align:left;max-height:130px;overflow-y:auto;margin-bottom:14px}
+.review-row{font-size:9px;color:#666;padding:3px 0;border-bottom:1px solid #111;line-height:1.5}
+.review-row.ok{color:#97C459}.review-row.bad{color:#E24B4A}
 #btn-restart{background:#534AB7;border:none;color:#fff;font-family:monospace;font-size:11px;padding:10px 24px;border-radius:4px;cursor:pointer;letter-spacing:1px}
 #btn-restart:hover{background:#3C3489}
-
-#statusbar{position:absolute;top:0;left:0;right:0;height:20px;background:#0d0d1a;border-bottom:1px solid #2a2a4a;display:none;align-items:center;padding:0 8px;gap:12px;z-index:10}
-#sb-char{font-size:8px;color:#AFA9EC;letter-spacing:1px}
-#sb-score{font-size:8px;color:#534AB7;margin-left:auto}
-#sb-enc{font-size:8px;color:#555}
-
-/* Mobile D-pad */
-#dpad{position:absolute;bottom:8px;left:8px;display:none;z-index:12;opacity:.7}
-.dpad-btn{background:#1a1a2e;border:1px solid #534AB7;color:#AFA9EC;font-size:14px;width:36px;height:36px;border-radius:4px;display:flex;align-items:center;justify-content:center;cursor:pointer;user-select:none;-webkit-user-select:none}
-.dpad-row{display:flex;gap:4px;justify-content:center}
+#dpad{position:absolute;bottom:6px;left:6px;display:none;z-index:12;opacity:.8}
+.dpad-btn{background:#1a1a2ecc;border:1px solid #534AB7;color:#AFA9EC;font-size:13px;width:34px;height:34px;border-radius:4px;display:flex;align-items:center;justify-content:center;cursor:pointer;user-select:none;-webkit-user-select:none;touch-action:none}
+.dpad-row{display:flex;gap:4px;justify-content:center;margin:2px 0}
 </style>
 </head>
 <body>
 <div id="app">
 
-  <div id="char-select">
-    <div id="title-logo">◆ RESPEITOMON ◆</div>
-    <h2>Escolha seu Treinador</h2>
-    <p>CIPA · Escritório Edição · 2025</p>
+  <div class="screen active" id="screen-city">
+    <div class="logo">◆ RESPEITOMON ◆</div>
+    <div class="sub">CIPA · Escritório Edição · 2025</div>
+    <h2>Você é da equipe de...</h2>
+    <button class="city-btn" onclick="selectCity('curitiba')">
+      <span class="city-name">🌲 CURITIBA</span>
+      <span class="city-members">@Ana Moraes · @Eloa · @Marcos Amancio · @Mirian Miyasawa<br>@Qué Miyazaki de Paula · @Samuca · @Thays Yamamura</span>
+    </button>
+    <button class="city-btn" onclick="selectCity('saopaulo')">
+      <span class="city-name">🏙️ SÃO PAULO</span>
+      <span class="city-members">@Fer Lima · @Giovanna Dolence · @Rob</span>
+    </button>
+  </div>
+
+  <div class="screen" id="screen-char">
+    <button class="back-btn" onclick="goBack()">← voltar</button>
+    <div class="logo">◆ RESPEITOMON ◆</div>
+    <div class="sub" id="char-sub">Escolha seu personagem</div>
     <div id="char-grid"></div>
   </div>
 
   <div id="statusbar">
     <span id="sb-char">—</span>
-    <span id="sb-enc">◆ 0/5 encontros</span>
+    <span id="sb-enc">◆ 0/5</span>
     <span id="sb-score">0 pts</span>
   </div>
 
-  <canvas id="game-canvas" width="480" height="320" style="margin-top:20px;display:none"></canvas>
+  <canvas id="game-canvas" width="480" height="340"></canvas>
 
   <div id="dialog">
     <div id="dialog-name"></div>
     <div id="dialog-text"></div>
-    <div id="dialog-continue">▼ toque aqui ou ESPAÇO</div>
+    <div id="dialog-continue">▼ ESPAÇO ou toque para continuar</div>
   </div>
 
   <div id="battle">
     <div id="battle-scene">
+      <!-- cenario-batalha: troque o src pelo caminho do seu asset -->
+      <img id="battle-bg" src="assets/cenario-batalha.png" alt="cenário batalha" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;" />
       <div id="enemy-hud">
         <div id="enemy-name">???</div>
         <div id="enemy-hp-label">HP</div>
@@ -118,7 +133,8 @@ html,body{width:100%;height:100%;background:#1a1a2e;display:flex;justify-content
         <div id="enemy-level">Lv.1</div>
       </div>
       <canvas id="enemy-sprite" width="64" height="64"></canvas>
-      <canvas id="player-sprite" width="48" height="48"></canvas>
+      <!-- player-sprite: usa <img> com o PNG do personagem escolhido -->
+      <img id="player-sprite" src="" alt="player" style="position:absolute;left:35px;bottom:34px;width:64px;height:80px;object-fit:contain;object-position:center bottom;image-rendering:pixelated;z-index:2;" />
       <div id="player-hud">
         <div id="player-name">JOGADOR</div>
         <div id="player-hp-label">HP</div>
@@ -126,194 +142,257 @@ html,body{width:100%;height:100%;background:#1a1a2e;display:flex;justify-content
       </div>
     </div>
     <div id="battle-ui">
-      <div id="battle-msg">O que você vai fazer?</div>
+      <div id="battle-msg"></div>
+      <div id="battle-continue">▼ ESPAÇO ou toque para continuar</div>
       <div id="battle-actions"></div>
     </div>
   </div>
 
-  <div id="result-screen">
+  <div id="screen-result">
     <h2>◆ FIM DE JORNADA ◆</h2>
     <div id="result-score">0</div>
-    <div style="font-size:10px;color:#555;margin-bottom:6px">PONTOS DE RESPEITO</div>
+    <div style="font-size:9px;color:#444;margin-bottom:4px">PONTOS DE RESPEITO</div>
     <div id="result-rank"></div>
-    <div style="font-size:9px;color:#555;letter-spacing:1px;margin-bottom:6px;align-self:flex-start">HISTÓRICO DE BATALHAS</div>
+    <div style="font-size:9px;color:#333;letter-spacing:1px;margin-bottom:6px;align-self:flex-start">HISTÓRICO DE BATALHAS</div>
     <div id="result-review"></div>
     <button id="btn-restart" onclick="restartGame()">JOGAR NOVAMENTE</button>
   </div>
 
-  <!-- Mobile D-pad -->
   <div id="dpad">
     <div class="dpad-row"><div class="dpad-btn" id="dp-up">▲</div></div>
-    <div class="dpad-row" style="margin:4px 0">
-      <div class="dpad-btn" id="dp-left">◀</div>
-      <div style="width:36px"></div>
-      <div class="dpad-btn" id="dp-right">▶</div>
-    </div>
+    <div class="dpad-row"><div class="dpad-btn" id="dp-left">◀</div><div style="width:34px"></div><div class="dpad-btn" id="dp-right">▶</div></div>
     <div class="dpad-row"><div class="dpad-btn" id="dp-down">▼</div></div>
   </div>
 
 </div>
-
 <script>
-const CHARS=[
-  {name:"ANA LUZ",role:"Técnica de Segurança",color:["#7F77DD","#AFA9EC","#EEE8FF","#534AB7","#3C3489"],emoji:"🔍"},
-  {name:"CARLOS ZEN",role:"Analista de RH",color:["#1D9E75","#5DCAA5","#E1F5EE","#0F6E56","#085041"],emoji:"🌿"},
-  {name:"BETE POWER",role:"Supervisora",color:["#D85A30","#F0997B","#FAECE7","#993C1D","#712B13"],emoji:"⚡"},
-  {name:"DOUG CRIATIVO",role:"Designer",color:["#378ADD","#85B7EB","#E6F1FB","#185FA5","#0C447C"],emoji:"🎨"}
-];
+// ── TEAMS — cada membro tem image: caminho do PNG do personagem ──
+// Para trocar um personagem, altere apenas o campo image: 'assets/nome-do-arquivo.png'
+const TEAMS={
+  curitiba:{label:'🌲 Curitiba',members:[
+    {name:'@Ana Moraes',    role:'Cipeira · Curitiba', image:'assets/ana-moraes.png'},
+    {name:'@Eloa',          role:'Cipeira · Curitiba', image:'assets/eloa.png'},
+    {name:'@Marcos Amancio',role:'Cipeiro · Curitiba', image:'assets/marcos-amancio.png'},
+    {name:'@Mirian Miyasawa',role:'Cipeira · Curitiba',image:'assets/mirian-miyasawa.png'},
+    {name:'@Qué Miyazaki de Paula',role:'Cipeira · Curitiba',image:'assets/que-miyazaki-de-paula.png'},
+    {name:'@Samuca',        role:'Cipeiro · Curitiba', image:'assets/samuca.png'},
+    {name:'@Thays Yamamura',role:'Cipeira · Curitiba', image:'assets/thays-yamamura.png'},
+  ]},
+  saopaulo:{label:'🏙️ São Paulo',members:[
+    {name:'@Fer Lima',        role:'Cipeira · São Paulo',image:'assets/fer-lima.png'},
+    {name:'@Giovanna Dolence',role:'Cipeira · São Paulo',image:'assets/giovanna-dolence.png'},
+    {name:'@Rob',             role:'Cipeiro · São Paulo',image:'assets/rob.png'},
+  ]}
+};
 
 const ENCOUNTERS=[
-  {id:0,name:"INTERRUPTOR",level:3,desc:"Não deixa ninguém terminar de falar.",sprite_color:["#E24B4A","#F09595","#FCEBEB","#A32D2D","#501313"],
-   intro:"Um INTERRUPTOR selvagem apareceu!\nEle cortou a fala de 3 pessoas essa manhã!",
+  {name:"INTERRUPTOR",level:3,desc:"Não deixa ninguém terminar de falar.",
+   sprite_color:["#E24B4A","#F09595","#FCEBEB","#A32D2D","#501313"],
+   intro:["Um INTERRUPTOR selvagem apareceu!","Ele cortou a fala de 3 pessoas essa manhã...","O que você vai fazer?"],
    skills:[
     {name:"FALAR MAL NOS CORREDORES",desc:"Espalha negatividade",power:-1,msg:"Você fofocou... −1 pt",correct:false,feedback:"Falar mal pelas costas alimenta um ciclo tóxico e não resolve nada."},
     {name:"INTERVIR COM LEVEZA",desc:"'Deixa o colega terminar!'",power:2,msg:"Intervenção respeitosa! +2 pts ⭐",correct:true,feedback:"Uma frase simples pode mudar toda a dinâmica da reunião!"},
-    {name:"IGNORAR E TORCER",desc:"Fica quieto esperando",power:0,msg:"Silêncio. Nada mudou.",correct:false,feedback:"Silêncio também é uma escolha — e pode perpetuar o problema."},
+    {name:"IGNORAR E TORCER",desc:"Fica quieto esperando",power:0,msg:"Silêncio. Nada mudou.",correct:false,feedback:"Silêncio também é uma escolha — pode perpetuar o problema."},
     {name:"RECLAMAR AO GESTOR",desc:"Delega imediatamente",power:1,msg:"Escalou direto. +1 pt",correct:false,feedback:"Pode ser necessário, mas tentar resolver antes é mais eficaz."}
    ]},
-  {id:1,name:"MEME TÓXICO",level:5,desc:"Piadas ofensivas no WhatsApp da equipe.",sprite_color:["#BA7517","#EF9F27","#FAEEDA","#854F0B","#412402"],
-   intro:"Um MEME TÓXICO apareceu no grupo!\nJá tem 14 curtidas de pessoas constrangidas.",
+  {name:"MEME TÓXICO",level:5,desc:"Piadas ofensivas no grupo da equipe.",
+   sprite_color:["#BA7517","#EF9F27","#FAEEDA","#854F0B","#412402"],
+   intro:["Um MEME TÓXICO apareceu no grupo!","Já tem curtidas de pessoas constrangidas...","O que você vai fazer?"],
    skills:[
     {name:"RIR JUNTO",desc:"Fingir que está tudo bem",power:-1,msg:"Você normalizou. −1 pt",correct:false,feedback:"Rir junto sinaliza que esse conteúdo é aceitável."},
     {name:"EXPLODIR NO GRUPO",desc:"Resposta exaltada pública",power:0,msg:"Conflito público. Mais drama.",correct:false,feedback:"A intenção era boa, mas criou mais tensão desnecessária."},
-    {name:"CONVERSA PRIVADA",desc:"Avisar o colega com empatia",power:2,msg:"Abordagem madura! +2 pts ⭐",correct:true,feedback:"Conversar em privado evita constrangimento e abre reflexão genuína."},
-    {name:"REPORTAR AO RH",desc:"Registrar formalmente",power:1,msg:"Formal, mas válido. +1 pt",correct:false,feedback:"Em casos graves, o RH é o canal certo. Bom instinto!"}
+    {name:"CONVERSA PRIVADA",desc:"Avisar o colega com empatia",power:2,msg:"Abordagem madura! +2 pts ⭐",correct:true,feedback:"Conversar em privado evita constrangimento e abre reflexão real."},
+    {name:"REPORTAR AO RH",desc:"Registrar formalmente",power:1,msg:"Formal, mas válido. +1 pt",correct:false,feedback:"Em casos graves, o RH é o canal certo!"}
    ]},
-  {id:2,name:"SOBRECARGA",level:7,desc:"Colega afogado de tarefas.",sprite_color:["#639922","#97C459","#EAF3DE","#3B6D11","#173404"],
-   intro:"Uma SOBRECARGA selvagem apareceu!\nSeu colega está com 3 projetos no limite!",
+  {name:"SOBRECARGA",level:7,desc:"Colega afogado de tarefas.",
+   sprite_color:["#639922","#97C459","#EAF3DE","#3B6D11","#173404"],
+   intro:["Uma SOBRECARGA selvagem apareceu!","Seu colega está com 3 projetos no limite...","O que você vai fazer?"],
    skills:[
-    {name:"IGNORAR",desc:"Afinal, não é seu problema",power:-1,msg:"Individualismo em campo. −1 pt",correct:false,feedback:"Ambientes colaborativos dependem da solidariedade entre colegas."},
-    {name:"OFERECER AJUDA",desc:"'Posso ajudar com alguma parte?'",power:2,msg:"Colaboração real! +2 pts ⭐",correct:true,feedback:"'Posso ajudar?' pode mudar o dia de alguém. Simples e poderoso."},
-    {name:"QUESTIONAR GESTÃO",desc:"Reclama da distribuição",power:0,msg:"Pode ser útil, mas poderia ajudar antes.",correct:false,feedback:"A crítica pode ser válida, mas a ajuda imediata seria mais impactante."},
-    {name:"MANDAR MENSAGEM DE APOIO",desc:"'Força, você consegue!'",power:1,msg:"Apoio emocional conta! +1 pt",correct:false,feedback:"Empatia importa — mas ajuda concreta seria ainda melhor."}
+    {name:"IGNORAR",desc:"Não é seu problema",power:-1,msg:"Individualismo em campo. −1 pt",correct:false,feedback:"Ambientes colaborativos dependem da solidariedade."},
+    {name:"OFERECER AJUDA",desc:"'Posso ajudar com alguma parte?'",power:2,msg:"Colaboração real! +2 pts ⭐",correct:true,feedback:"'Posso ajudar?' pode mudar o dia de alguém!"},
+    {name:"QUESTIONAR A GESTÃO",desc:"Reclama da distribuição",power:0,msg:"Pode ser útil, mas poderia ajudar antes.",correct:false,feedback:"A crítica pode ser válida, mas a ajuda imediata seria mais impactante."},
+    {name:"MENSAGEM DE APOIO",desc:"'Força, você consegue!'",power:1,msg:"Apoio emocional conta! +1 pt",correct:false,feedback:"Empatia importa — mas ajuda concreta seria ainda melhor."}
    ]},
-  {id:3,name:"FOFOCA",level:9,desc:"Comentários sobre quem não está presente.",sprite_color:["#993556","#ED93B1","#FBEAF0","#72243E","#4B1528"],
-   intro:"Uma FOFOCA selvagem apareceu!\nEla já atingiu 4 andares do escritório!",
+  {name:"FOFOCA",level:9,desc:"Comentários sobre quem não está presente.",
+   sprite_color:["#993556","#ED93B1","#FBEAF0","#72243E","#4B1528"],
+   intro:["Uma FOFOCA selvagem apareceu!","Ela já atingiu 4 andares do escritório...","O que você vai fazer?"],
    skills:[
     {name:"ENTRAR NA CONVERSA",desc:"Adicionar mais ao fogo",power:-2,msg:"Você alimentou a chama. −2 pts",correct:false,feedback:"Participar de fofoca amplifica o dano e deteriora a confiança."},
-    {name:"MUDAR O ASSUNTO",desc:"Observação positiva sobre o ausente",power:2,msg:"Desvio habilidoso! +2 pts ⭐",correct:true,feedback:"Redirecionar sem criar confronto é uma habilidade poderosa de liderança."},
+    {name:"MUDAR O ASSUNTO",desc:"Observação positiva sobre o ausente",power:2,msg:"Desvio habilidoso! +2 pts ⭐",correct:true,feedback:"Redirecionar sem confronto é uma habilidade poderosa de liderança."},
     {name:"FINGIR NÃO OUVIR",desc:"Se afasta sem dizer nada",power:0,msg:"Neutro. A fofoca continua.",correct:false,feedback:"Não participar já ajuda, mas uma intervenção gentil teria mais impacto."},
     {name:"DEFENDER O AUSENTE",desc:"'Eu vi diferente...'",power:1,msg:"Defesa corajosa! +1 pt",correct:false,feedback:"Defender alguém é nobre — mas mudar o assunto costuma ser mais suave."}
    ]},
-  {id:4,name:"FEEDBACK PÚBLICO",level:12,desc:"Crítica feita na frente de todos.",sprite_color:["#534AB7","#AFA9EC","#EEEDFE","#3C3489","#26215C"],
-   intro:"Um FEEDBACK PÚBLICO apareceu!\nSeu gestor te criticou na frente de todos!",
+  {name:"FEEDBACK PÚBLICO",level:12,desc:"Crítica feita na frente de todos.",
+   sprite_color:["#534AB7","#AFA9EC","#EEEDFE","#3C3489","#26215C"],
+   intro:["Um FEEDBACK PÚBLICO apareceu!","Seu gestor te criticou na frente de todos!","O que você vai fazer?"],
    skills:[
-    {name:"EXPLODIR NA HORA",desc:"Resposta emocional imediata",power:-2,msg:"Reação impulsiva. −2 pts",correct:false,feedback:"Reagir no calor do momento raramente resolve e pode criar mais problemas."},
-    {name:"ENGOLIR EM SECO",desc:"Guardar tudo pra si mesmo",power:0,msg:"Aliviou no momento, nada mudou.",correct:false,feedback:"Processar emoções é saudável, mas não resolver pode gerar ressentimento."},
-    {name:"PEDIR CONVERSA INDIVIDUAL",desc:"Expressar como se sentiu",power:2,msg:"Assertivo e maduro! +2 pts ⭐",correct:true,feedback:"Pedir conversa privada é sinal de maturidade. Você se posiciona sem expor o conflito."},
-    {name:"REPORTAR AO RH DIRETO",desc:"Formalizar imediatamente",power:1,msg:"Válido se for recorrente. +1 pt",correct:false,feedback:"Em casos graves, o RH é o caminho. Tentar o diálogo antes costuma ser mais eficaz."}
+    {name:"EXPLODIR NA HORA",desc:"Resposta emocional imediata",power:-2,msg:"Reação impulsiva. −2 pts",correct:false,feedback:"Reagir no calor raramente resolve — pode criar mais problemas."},
+    {name:"ENGOLIR EM SECO",desc:"Guardar tudo pra si",power:0,msg:"Aliviou no momento, nada mudou.",correct:false,feedback:"Processar emoções é saudável, mas não resolver pode gerar ressentimento."},
+    {name:"PEDIR CONVERSA INDIVIDUAL",desc:"Expressar como se sentiu",power:2,msg:"Assertivo e maduro! +2 pts ⭐",correct:true,feedback:"Pedir conversa privada é maturidade. Você se posiciona sem expor o conflito."},
+    {name:"REPORTAR AO RH DIRETO",desc:"Formalizar imediatamente",power:1,msg:"Válido se for recorrente. +1 pt",correct:false,feedback:"Em casos graves, o RH é o caminho certo."}
    ]}
 ];
 
-const ENCOUNTER_ZONES=[
-  {x:5,y:8,triggered:false},{x:12,y:5,triggered:false},{x:20,y:9,triggered:false},
-  {x:7,y:15,triggered:false},{x:22,y:14,triggered:false}
+const ENC_ZONES=[
+  {x:5,y:7,triggered:false},{x:13,y:4,triggered:false},{x:21,y:8,triggered:false},
+  {x:8,y:14,triggered:false},{x:22,y:13,triggered:false}
 ];
 
-let playerPos={x:14,y:10},encountersTriggered=0,currentEnc=-1,score=0,battleLog=[],
-    playerHP=100,enemyHP=100,selectedChar=null,inBattle=false,inDialog=false,
-    dialogQueue=[],animFrame=null,keys={},lastMoveTime=0;
-const MOVE_DELAY=120;
+let selectedCity=null,charData=null;
+let playerPos={x:14,y:10},encountersTriggered=0,score=0,battleLog=[];
+let playerHP=100,enemyHP=100,inBattle=false,inDialog=false;
+let animFrame=null,keys={},lastMove=0;
+const MOVE_DELAY=130;
 
-function drawPlayer(canvas,colors,scale=1){
-  const ctx=canvas.getContext('2d');const s=scale;ctx.clearRect(0,0,canvas.width,canvas.height);
-  const[body,skin,light,dark,darkest]=colors;
-  const px=(x,y,c,w=1,h=1)=>{ctx.fillStyle=c;ctx.fillRect(x*s,y*s,w*s,h*s)};
-  px(3,0,dark,4,1);px(2,1,dark,6,1);px(3,2,skin,4,3);
-  px(3,3,'#111',1,1);px(6,3,'#111',1,1);px(4,4,'#b06060',2,1);px(4,5,skin,2,1);
-  px(2,6,body,6,4);px(1,6,body,1,3);px(8,6,body,1,3);px(1,9,skin,1,1);px(8,9,skin,1,1);
-  px(2,10,darkest,6,3);px(2,13,darkest,2,2);px(6,13,darkest,2,2);px(2,15,'#222',2,1);px(6,15,'#222',2,1);
+// ── REMOVIDO: drawPlayer por pixels ──
+// Substituído por imagens PNG. Não é mais necessário.
+
+// ── drawMonster: mantido para os inimigos (sprites de batalha gerados por código) ──
+
+function drawMonster(canvas,colors,type){
+  const ctx=canvas.getContext('2d');
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  const[c1,c2,c3,c4]=colors,s=4;
+  const p=(x,y,c,w,h)=>{ctx.fillStyle=c;ctx.fillRect(x*s,y*s,(w||1)*s,(h||1)*s)};
+  [
+    ()=>{p(4,1,c1,8);p(3,2,c1,10);p(2,3,c1,12,6);p(3,9,c1,10,2);p(4,11,c1,8);p(4,4,c3,3,2);p(9,4,c3,3,2);p(5,4,'#111',2,2);p(10,4,'#111',2,2);p(5,8,c4,6);p(6,9,'#fff',4);p(3,11,c2,2,2);p(11,11,c2,2,2);p(1,5,c2,2,2);p(13,5,c2,2,2)},
+    ()=>{p(3,0,c1,10);p(2,1,c1,12);p(1,2,c1,14,7);p(1,9,c1,3,2);p(5,9,c1,4,2);p(10,9,c1,2,2);p(13,9,c1,2,2);p(3,3,c3,4,2);p(9,3,c3,4,2);p(4,3,'#000',2,2);p(10,3,'#000',2,2);p(5,7,c4,6)},
+    ()=>{p(5,0,c2,6,2);p(3,2,c1,10);p(2,3,c1,12,5);p(3,8,c1,10,2);p(4,10,c1,8);p(1,3,c2,1,2);p(14,3,c2,1,2);p(4,4,c3,3,2);p(9,4,c3,3,2);p(5,4,'#000',2,2);p(10,4,'#000',2,2);p(5,7,c4,6);p(3,10,c2,2,2);p(11,10,c2,2,2)},
+    ()=>{p(5,0,c2,6,2);p(3,1,c1,10);p(2,2,c1,12,6);p(3,8,c1,10,2);p(4,10,c1,8);p(3,3,c3,4,2);p(9,3,c3,4,2);p(4,3,'#111',2,2);p(10,3,'#111',2,2);p(5,7,c4,6);p(1,5,c2,2,3);p(13,5,c2,2,3);p(4,10,c2,3,2);p(9,10,c2,3,2)},
+    ()=>{p(5,0,c4,6);p(4,1,c1,8);p(3,2,c1,10);p(2,3,c1,12,7);p(3,10,c1,10,2);p(4,12,c1,8);p(1,4,c4,2,3);p(13,4,c4,2,3);p(3,4,'#fff',4,2);p(9,4,'#fff',4,2);p(4,4,c4,2,2);p(10,4,c4,2,2);p(5,8,c4,6,2);p(6,9,'#fff',4);p(3,12,c2,3,2);p(10,12,c2,3,2)}
+  ][type%5]();
 }
 
-function drawMonster(canvas,colors,type=0){
-  const ctx=canvas.getContext('2d');ctx.clearRect(0,0,canvas.width,canvas.height);
-  const[c1,c2,c3,c4,c5]=colors;const s=4;
-  const px=(x,y,c,w=1,h=1)=>{ctx.fillStyle=c;ctx.fillRect(x*s,y*s,w*s,h*s)};
-  const patterns=[
-    ()=>{px(4,1,c1,8,1);px(3,2,c1,10,1);px(2,3,c1,12,6);px(3,9,c1,10,2);px(4,11,c1,8,1);px(4,4,c3,3,2);px(9,4,c3,3,2);px(5,4,'#111',2,2);px(10,4,'#111',2,2);px(5,8,c4,6,1);px(6,9,'#fff',4,1);px(3,11,c2,2,2);px(11,11,c2,2,2);px(1,5,c2,2,2);px(13,5,c2,2,2)},
-    ()=>{px(3,0,c1,10,1);px(2,1,c1,12,1);px(1,2,c1,14,7);px(1,9,c1,3,2);px(5,9,c1,4,2);px(10,9,c1,2,2);px(13,9,c1,2,2);px(3,3,c3,4,2);px(9,3,c3,4,2);px(4,3,'#000',2,2);px(10,3,'#000',2,2);px(5,7,c4,6,1)},
-    ()=>{px(5,0,c2,6,2);px(3,2,c1,10,1);px(2,3,c1,12,5);px(3,8,c1,10,2);px(4,10,c1,8,1);px(1,3,c2,1,2);px(14,3,c2,1,2);px(2,1,c2,1,2);px(13,1,c2,1,2);px(4,4,c3,3,2);px(9,4,c3,3,2);px(5,4,'#000',2,2);px(10,4,'#000',2,2);px(5,7,c4,6,1);px(6,8,'#fff',4,1);px(3,10,c2,2,2);px(11,10,c2,2,2)},
-    ()=>{px(5,0,c2,6,2);px(3,1,c1,10,1);px(2,2,c1,12,6);px(3,8,c1,10,2);px(4,10,c1,8,1);px(3,3,c3,4,2);px(9,3,c3,4,2);px(4,3,'#111',2,2);px(10,3,'#111',2,2);px(4,3,c3,1,1);px(10,3,c3,1,1);px(5,7,c4,6,1);px(1,5,c2,2,3);px(13,5,c2,2,3);px(4,10,c2,3,2);px(9,10,c2,3,2)},
-    ()=>{px(5,0,c4,6,1);px(4,1,c1,8,1);px(3,2,c1,10,1);px(2,3,c1,12,7);px(3,10,c1,10,2);px(4,12,c1,8,1);px(1,4,c4,2,3);px(13,4,c4,2,3);px(3,4,'#fff',4,2);px(9,4,'#fff',4,2);px(4,4,c4,2,2);px(10,4,c4,2,2);px(5,5,'#fff',1,1);px(11,5,'#fff',1,1);px(5,8,c4,6,2);px(6,9,'#fff',4,1);px(3,12,c2,3,2);px(10,12,c2,3,2)}
-  ];
-  patterns[type%5]();
-}
 
+// ── IMAGENS PRÉ-CARREGADAS ──────────────────────────────
+
+// getTile: mantido para colisão de movimento (não afeta o visual)
+// O mapa visual vem da imagem, mas a lógica de bloqueio usa esta função
 function getTile(c,r){
   if(r===0||r===19||c===0||c===29)return'W';
-  if((r===3||r===4)&&c>=2&&c<=8)return'D';
-  if((r===3||r===4)&&c>=11&&c<=17)return'D';
-  if((r===3||r===4)&&c>=20&&c<=26)return'D';
-  if((r===15||r===16)&&c>=2&&c<=8)return'D';
-  if((r===15||r===16)&&c>=11&&c<=17)return'D';
-  if((r===15||r===16)&&c>=20&&c<=26)return'D';
+  if((r===3||r===4)&&((c>=2&&c<=8)||(c>=11&&c<=17)||(c>=20&&c<=26)))return'D';
+  if((r===15||r===16)&&((c>=2&&c<=8)||(c>=11&&c<=17)||(c>=20&&c<=26)))return'D';
   if(r>=6&&r<=13&&c>=10&&c<=19)return'C';
-  if((r===1&&c===1)||(r===1&&c===28)||(r===18&&c===1)||(r===18&&c===28))return'P';
+  if((r===1&&(c===1||c===28))||(r===18&&(c===1||c===28)))return'P';
   return'F';
 }
+// cenario-escritorio: troque o caminho se necessário
+const IMG_ESCRITORIO = new Image();
+IMG_ESCRITORIO.src = 'assets/cenario-escritorio.png';
 
-function drawMap(ctx,px,py){
-  const TW=16,COLS=30,ROWS=20;
-  const camX=Math.max(0,Math.min(px-15,COLS-30))*TW;
-  const camY=Math.max(0,Math.min(py-10,ROWS-20))*TW;
-  ctx.fillStyle='#1a2f1a';ctx.fillRect(0,0,480,320);
-  for(let r=0;r<ROWS;r++){
-    for(let c=0;c<COLS;c++){
-      const sx=c*TW-camX,sy=r*TW-camY;
-      if(sx<-TW||sx>480||sy<-TW||sy>320)continue;
-      const tile=getTile(c,r);
-      let col='#2a3f2a';
-      if(tile==='W')col='#111';
-      else if(tile==='D')col='#4a3a20';
-      else if(tile==='C')col='#2a2a4a';
-      else if(tile==='P')col='#1a5a1a';
-      ctx.fillStyle=col;ctx.fillRect(sx,sy,TW-1,TW-1);
-      if(tile==='D'){ctx.fillStyle='#6a5a30';ctx.fillRect(sx+2,sy+2,TW-5,3);ctx.fillStyle='#8a7a40';ctx.fillRect(sx+3,sy+2,2,2)}
-      if(tile==='P'){ctx.fillStyle='#2a8a2a';ctx.fillRect(sx+4,sy+2,8,8);ctx.fillStyle='#1a6a1a';ctx.fillRect(sx+6,sy+1,4,4)}
-      if(tile==='C'){ctx.fillStyle='#3a3a6a';ctx.fillRect(sx+3,sy+3,2,2);ctx.fillRect(sx+11,sy+3,2,2);ctx.fillRect(sx+3,sy+11,2,2);ctx.fillRect(sx+11,sy+11,2,2)}
-    }
-  }
-  ENCOUNTER_ZONES.forEach((z,i)=>{
-    const sx=z.x*TW-camX,sy=z.y*TW-camY;
-    if(sx<-TW||sx>480||sy<-TW||sy>320)return;
-    if(!z.triggered){
-      ctx.fillStyle=Math.sin(Date.now()/300+i)>0?'#1a1a3a':'#1e1e3e';
-      ctx.fillRect(sx,sy,TW*3-1,TW*3-1);
-      ctx.fillStyle='#534AB760';ctx.fillRect(sx+2,sy+2,TW*3-5,TW*3-5);
-      ctx.fillStyle='#AFA9EC';ctx.font='bold 9px monospace';ctx.fillText('!',sx+TW+3,sy+TW+6);
+// Cache de imagens dos personagens (carregado ao selecionar cidade)
+const imgCache = {};
+function preloadCharImages(members){
+  members.forEach(m=>{
+    if(!imgCache[m.image]){
+      const img=new Image();img.src=m.image;imgCache[m.image]=img;
     }
   });
-  // Draw player
-  const c=CHARS[selectedChar];const colors=c?c.color:["#534AB7","#AFA9EC","#EEE","#3C3489","#26215C"];
-  const bx=px*TW-camX,by=py*TW-camY;
-  const s=1.2;
-  const ppx=(x,y,col,w=1,h=1)=>{ctx.fillStyle=col;ctx.fillRect(bx+x*s,by+y*s-4,w*s,h*s)};
-  const[body,skin,,dark,darkest]=colors;
-  ppx(3,0,dark,4,1);ppx(2,1,dark,6,1);ppx(3,2,skin,4,3);ppx(3,3,'#111',1,1);ppx(6,3,'#111',1,1);
-  ppx(2,6,body,6,4);ppx(2,10,darkest,6,3);ppx(2,13,darkest,2,2);ppx(6,13,darkest,2,2);
 }
 
+// ── MAPA: desenha imagem de fundo + personagem + zonas de encontro ──
+function drawMap(ctx, px, py){
+  const W=480,H=340;
+  ctx.clearRect(0,0,W,H);
+
+  // Fundo: imagem do escritório
+  // Para trocar o cenário, altere IMG_ESCRITORIO.src acima
+  if(IMG_ESCRITORIO.complete && IMG_ESCRITORIO.naturalWidth>0){
+    ctx.drawImage(IMG_ESCRITORIO,0,0,W,H);
+  } else {
+    // Fallback enquanto imagem carrega
+    ctx.fillStyle='#6b8a2a';ctx.fillRect(0,0,W,H);
+    ctx.fillStyle='#5a7a20';ctx.font='12px monospace';ctx.textAlign='center';
+    ctx.fillText('Carregando cenário...',W/2,H/2);
+  }
+
+  // Zonas de encontro — sobrepostas na imagem
+  // Coordenadas x,y mapeadas para posições em pixels no canvas (ajuste conforme seu cenário)
+  ENC_ZONES.forEach((z,i)=>{
+    if(z.triggered)return;
+    // Converte coordenada de grade para pixel — ajuste SCALE_X/SCALE_Y se necessário
+    const SCALE_X=480/30, SCALE_Y=320/20;
+    const sx=(z.x+1)*SCALE_X, sy=(z.y+1)*SCALE_Y+20;
+    const pulse=Math.sin(Date.now()/280+i)*.4+.6;
+    ctx.fillStyle=`rgba(83,74,183,${pulse*.5})`;
+    ctx.beginPath();ctx.ellipse(sx,sy,18,9,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle=`rgba(200,190,255,${pulse})`;
+    ctx.font='bold 12px monospace';ctx.textAlign='center';
+    ctx.fillText('!',sx,sy+4);
+    // Partículas
+    for(let s=0;s<3;s++){
+      const a=(Date.now()/380+s*2.09)%(Math.PI*2);
+      ctx.fillStyle=`rgba(175,169,236,${pulse*.7})`;
+      ctx.fillRect(sx+Math.cos(a)*14-1,sy+Math.sin(a)*7-1,2,2);
+    }
+  });
+
+  // Sprite do jogador na posição atual
+  if(charData && imgCache[charData.image]){
+    const img=imgCache[charData.image];
+    const SCALE_X=480/30, SCALE_Y=320/20;
+    const sx=playerPos.x*SCALE_X, sy=playerPos.y*SCALE_Y+20;
+    const SW=40,SH=56;
+    if(img.complete && img.naturalWidth>0){
+      ctx.drawImage(img, sx-SW/2, sy-SH, SW, SH);
+    }
+    // Nome acima do personagem
+    ctx.fillStyle='#0d0d1acc';ctx.fillRect(sx-28,sy-SH-12,56,12);
+    ctx.fillStyle='#AFA9EC';ctx.font='8px monospace';ctx.textAlign='center';
+    ctx.fillText(charData.name.substring(0,14),sx,sy-SH-3);
+  }
+}
+
+// ── SCREENS ────────────────────────────────────────────
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  if(id){const el=document.getElementById(id);if(el)el.classList.add('active')}
+}
+
+function selectCity(city){
+  selectedCity=city;
+  const team=TEAMS[city];
+  document.getElementById('char-sub').textContent=team.label+' — escolha seu personagem';
+  const grid=document.getElementById('char-grid');grid.innerHTML='';
+  const cols=team.members.length>4?3:2;
+  grid.style.gridTemplateColumns=`repeat(${cols},1fr)`;
+  // Pré-carrega imagens dos personagens desta equipe
+  preloadCharImages(team.members);
+  team.members.forEach(m=>{
+    const card=document.createElement('div');card.className='char-card';card.onclick=()=>startGame(m);
+    // Usa <img> com o PNG do personagem — para trocar, altere image: em TEAMS
+    const img=document.createElement('img');
+    img.src=m.image;
+    img.alt=m.name;
+    card.appendChild(img);
+    card.innerHTML+=`<div class="cname">${m.name}</div><div class="crole">${m.role}</div>`;
+    grid.appendChild(card);
+  });
+  showScreen('screen-char');
+}
+
+function goBack(){showScreen('screen-city')}
+
+// ── GAME LOOP ──────────────────────────────────────────
 function gameLoop(ts){
   if(inBattle||inDialog){animFrame=requestAnimationFrame(gameLoop);return}
-  if(ts-lastMoveTime>MOVE_DELAY){
+  if(ts-lastMove>MOVE_DELAY){
     let nx=playerPos.x,ny=playerPos.y;
     if(keys['ArrowUp']||keys['w']||keys['W'])ny--;
     else if(keys['ArrowDown']||keys['s']||keys['S'])ny++;
     else if(keys['ArrowLeft']||keys['a']||keys['A'])nx--;
     else if(keys['ArrowRight']||keys['d']||keys['D'])nx++;
-    if(nx!==playerPos.x||ny!==playerPos.y){
-      if(getTile(nx,ny)!=='W'&&nx>0&&nx<29&&ny>0&&ny<19){
-        playerPos.x=nx;playerPos.y=ny;lastMoveTime=ts;checkEncounters();
-      }
+    if((nx!==playerPos.x||ny!==playerPos.y)&&getTile(nx,ny)!=='W'&&nx>0&&nx<29&&ny>0&&ny<19){
+      playerPos.x=nx;playerPos.y=ny;lastMove=ts;checkEncounters();
     }
   }
-  const canvas=document.getElementById('game-canvas');
-  drawMap(canvas.getContext('2d'),playerPos.x,playerPos.y);
+  const cv=document.getElementById('game-canvas');
+  drawMap(cv.getContext('2d'),playerPos.x,playerPos.y);
   animFrame=requestAnimationFrame(gameLoop);
 }
 
 function checkEncounters(){
-  ENCOUNTER_ZONES.forEach((z,i)=>{
+  ENC_ZONES.forEach((z,i)=>{
     if(z.triggered)return;
     if(Math.abs(playerPos.x-(z.x+1))<=1&&Math.abs(playerPos.y-(z.y+1))<=1&&encountersTriggered<ENCOUNTERS.length){
       z.triggered=true;triggerBattle(encountersTriggered);
@@ -321,211 +400,186 @@ function checkEncounters(){
   });
 }
 
+// ── DIALOG ─────────────────────────────────────────────
 function showDialog(name,lines,onDone){
   inDialog=true;
-  const arr=typeof lines==='string'?lines.split('\n'):lines;
+  const arr=Array.isArray(lines)?lines:[lines];
   const box=document.getElementById('dialog');box.style.display='block';
   document.getElementById('dialog-name').textContent=name;
   let idx=0;
-  function next(){
-    if(idx<arr.length){document.getElementById('dialog-text').textContent=arr[idx++]}
-    else{box.style.display='none';inDialog=false;document.removeEventListener('keydown',nk);box.onclick=null;if(onDone)onDone()}
-  }
+  function next(){if(idx<arr.length){document.getElementById('dialog-text').textContent=arr[idx++]}
+    else{box.style.display='none';inDialog=false;document.removeEventListener('keydown',nk);box.onclick=null;if(onDone)onDone()}}
   function nk(e){if(e.code==='Space'||e.code==='Enter'){e.preventDefault();next()}}
   document.addEventListener('keydown',nk);box.onclick=next;next();
 }
 
-function triggerBattle(encIndex){
-  inBattle=true;currentEnc=encIndex;encountersTriggered++;
+// ── BATTLE BG: usa <img id="battle-bg"> — não precisa mais de canvas ──
+// O elemento já está no HTML como <img src="assets/cenario-batalha.png">
+function drawBattleBG(){ /* substituído por <img id="battle-bg"> no HTML */ }
+
+// ── BATTLE ─────────────────────────────────────────────
+function triggerBattle(encIdx){
+  inBattle=true;encountersTriggered++;
   playerHP=100;enemyHP=100;
-  const enc=ENCOUNTERS[encIndex];
-  document.getElementById('game-canvas').style.display='none';
-  document.getElementById('dialog').style.display='none';
+  const enc=ENCOUNTERS[encIdx];
+  ['game-canvas','dialog','dpad'].forEach(id=>{const e=document.getElementById(id);if(e)e.style.display='none'});
   document.getElementById('statusbar').style.display='none';
-  document.getElementById('dpad').style.display='none';
-  drawMonster(document.getElementById('enemy-sprite'),enc.sprite_color,encIndex%5);
-  const ps=document.getElementById('player-sprite');ps.width=40;ps.height=64;
-  drawPlayer(ps,CHARS[selectedChar].color,4);
+  drawBattleBG(); // no-op, fundo já está no <img>
+  drawMonster(document.getElementById('enemy-sprite'),enc.sprite_color,encIdx%5);
+
+  // Sprite do jogador: usa a imagem PNG do personagem escolhido
+  // Para trocar o asset, altere o campo image em TEAMS acima
+  const ps=document.getElementById('player-sprite');
+  ps.src=charData.image;
+
   document.getElementById('enemy-name').textContent=enc.name+'  Lv.'+enc.level;
   document.getElementById('enemy-level').textContent='⚡ '+enc.desc;
-  document.getElementById('player-name').textContent=CHARS[selectedChar].name;
+  document.getElementById('player-name').textContent=charData.name;
   document.getElementById('enemy-hp-fill').style.width='100%';
   document.getElementById('player-hp-fill').style.width='100%';
+  document.getElementById('battle-actions').innerHTML='';
+  document.getElementById('battle-continue').style.display='none';
   document.getElementById('battle').style.display='flex';
-  setTimeout(()=>{
-    document.getElementById('battle-msg').textContent=enc.intro.replace('\n',' ');
-    disableActions();
-    setTimeout(()=>{
-      document.getElementById('battle-msg').textContent='O que '+CHARS[selectedChar].name+' vai fazer?';
-      renderActions(enc);
-    },2000);
-  },300);
+  showIntroLine(enc,0);
+}
+
+function showIntroLine(enc,idx){
+  const msg=document.getElementById('battle-msg');
+  const cont=document.getElementById('battle-continue');
+  msg.textContent=enc.intro[idx];
+  cont.style.display='block';
+  const isLast=idx>=enc.intro.length-1;
+
+  function advance(e){
+    if(e&&e.code&&e.code!=='Space'&&e.code!=='Enter')return;
+    cont.style.display='none';
+    document.removeEventListener('keydown',advance);
+    document.getElementById('battle-ui').removeEventListener('click',advance);
+    if(!isLast){showIntroLine(enc,idx+1)}
+    else{msg.textContent='O que '+charData.name+' vai fazer?';renderActions(enc)}
+  }
+  document.addEventListener('keydown',advance);
+  document.getElementById('battle-ui').addEventListener('click',advance,{once:true});
 }
 
 function renderActions(enc){
-  const container=document.getElementById('battle-actions');container.innerHTML='';
-  enc.skills.forEach((skill,i)=>{
+  const c=document.getElementById('battle-actions');c.innerHTML='';
+  enc.skills.forEach(skill=>{
     const btn=document.createElement('button');btn.className='action-btn';
     btn.innerHTML=`<span class="skill-name">${skill.name}</span><span class="skill-desc">${skill.desc}</span>`;
-    btn.onclick=()=>executeSkill(skill,i,enc);container.appendChild(btn);
+    btn.onclick=()=>execSkill(skill,enc);c.appendChild(btn);
   });
 }
 
-function disableActions(){document.querySelectorAll('.action-btn').forEach(b=>b.disabled=true)}
-
-function executeSkill(skill,idx,enc){
-  disableActions();
+function execSkill(skill,enc){
+  document.querySelectorAll('.action-btn').forEach(b=>b.disabled=true);
   const msg=document.getElementById('battle-msg');
-  msg.textContent=CHARS[selectedChar].name+' usa '+skill.name+'!';
-  const es=document.getElementById('enemy-sprite');
+  const cont=document.getElementById('battle-continue');
+  msg.textContent=charData.name+' usa: '+skill.name+'!';
+
   setTimeout(()=>{
+    const es=document.getElementById('enemy-sprite');
     es.classList.add('hit');setTimeout(()=>es.classList.remove('hit'),300);
-    const dmg=skill.correct?100:(skill.power<=0?0:50);
-    enemyHP=Math.max(0,enemyHP-dmg);
+    enemyHP=Math.max(0,skill.correct?0:enemyHP-(skill.power<=0?0:50));
     document.getElementById('enemy-hp-fill').style.width=enemyHP+'%';
     if(skill.power>0)score+=skill.power;else if(skill.power<0)score=Math.max(0,score+skill.power);
     document.getElementById('sb-score').textContent=score+' pts';
+    battleLog.push({enc:enc.name,ok:skill.correct,skill:skill.name});
+
     setTimeout(()=>{
-      msg.textContent=skill.msg;
-      setTimeout(()=>{
-        msg.textContent='💡 '+skill.feedback;
-        battleLog.push({enc:enc.name,ok:skill.correct,skill:skill.name});
-        setTimeout(()=>{
-          if(skill.correct){winBattle(enc)}
-          else{enemyCounter(enc)}
-        },2000);
-      },1500);
-    },800);
-  },500);
+      msg.textContent=skill.msg+'\n\n💡 '+skill.feedback;
+      cont.style.display='block';
+      function next(e){
+        if(e&&e.code&&e.code!=='Space'&&e.code!=='Enter')return;
+        cont.style.display='none';
+        document.removeEventListener('keydown',next);
+        document.getElementById('battle-ui').removeEventListener('click',next);
+        if(skill.correct)winBattle(enc);else enemyCounter(enc);
+      }
+      document.addEventListener('keydown',next);
+      document.getElementById('battle-ui').addEventListener('click',next,{once:true});
+    },600);
+  },400);
 }
 
 function enemyCounter(enc){
-  const msg=document.getElementById('battle-msg');
-  msg.textContent=enc.name+' contra-ataca!';
   const ps=document.getElementById('player-sprite');
+  document.getElementById('battle-msg').textContent=enc.name+' contra-ataca!\nTente outra abordagem...';
   ps.classList.add('shake');setTimeout(()=>ps.classList.remove('shake'),300);
   playerHP=Math.max(0,playerHP-20);
   document.getElementById('player-hp-fill').style.width=playerHP+'%';
-  setTimeout(()=>{msg.textContent='Resista! Escolha outra abordagem...';renderActions(enc)},1500);
+  setTimeout(()=>{document.getElementById('battle-msg').textContent='O que '+charData.name+' vai fazer?';renderActions(enc)},1400);
 }
 
 function winBattle(enc){
-  document.getElementById('battle-msg').textContent='🌟 '+enc.name+' derrotado com respeito! +XP';
-  document.getElementById('sb-enc').textContent='◆ '+encountersTriggered+'/5 encontros';
+  document.getElementById('battle-msg').textContent='🌟 '+enc.name+' foi derrotado com respeito!\nVocê ganhou XP!';
+  document.getElementById('sb-enc').textContent='◆ '+encountersTriggered+'/5';
   setTimeout(()=>{
-    endBattle();
-    if(encountersTriggered>=ENCOUNTERS.length)setTimeout(showResult,500);
-  },1800);
-}
-
-function endBattle(){
-  inBattle=false;
-  document.getElementById('battle').style.display='none';
-  document.getElementById('game-canvas').style.display='block';
-  document.getElementById('statusbar').style.display='flex';
-  document.getElementById('dpad').style.display='block';
-  if(encountersTriggered<ENCOUNTERS.length){
-    showDialog('SISTEMA',['Você venceu!',(ENCOUNTERS.length-encountersTriggered)+' situação(ões) ainda aguardam.','Use as setas ou o D-pad para explorar.'],()=>{
-      animFrame=requestAnimationFrame(gameLoop);
-    });
-  }
+    inBattle=false;
+    document.getElementById('battle').style.display='none';
+    document.getElementById('game-canvas').style.display='block';
+    document.getElementById('statusbar').style.display='flex';
+    document.getElementById('dpad').style.display='block';
+    if(encountersTriggered>=ENCOUNTERS.length){setTimeout(showResult,300)}
+    else{showDialog('SISTEMA',['Você venceu!',(ENCOUNTERS.length-encountersTriggered)+' situação(ões) ainda aguardam no escritório.','Explore para encontrá-las!'],()=>animFrame=requestAnimationFrame(gameLoop))}
+  },1600);
 }
 
 function showResult(){
-  ['battle','game-canvas','statusbar','dialog','dpad'].forEach(id=>{
-    const el=document.getElementById(id);if(el)el.style.display='none';
-  });
-  const rs=document.getElementById('result-screen');rs.style.display='flex';
+  ['battle','game-canvas','statusbar','dialog','dpad'].forEach(id=>{const e=document.getElementById(id);if(e)e.style.display='none'});
+  const rs=document.getElementById('screen-result');rs.style.display='flex';
   document.getElementById('result-score').textContent=score;
-  const maxScore=10,pct=score/maxScore;
-  let rank,rdesc;
-  if(pct>=0.8){rank='🌟 EMBAIXADOR(A) DO RESPEITO';rdesc='Incrível! Você domina a arte da convivência saudável.\nO escritório precisa de pessoas como você!'}
-  else if(pct>=0.5){rank='😊 PROMOVE O RESPEITO';rdesc='Muito bem! Você já tem grande sensibilidade.\nAlguns ajustes e você chega na excelência!'}
-  else if(pct>=0.3){rank='🤔 EM EVOLUÇÃO';rdesc='Você está crescendo!\nCada situação é uma oportunidade de aprender.'}
-  else{rank='💪 HORA DE REFLETIR';rdesc='Todo mundo começa em algum lugar.\nO importante é a vontade de melhorar!'}
-  document.getElementById('result-rank').textContent=rank+'\n\n'+rdesc;
-  document.getElementById('result-rank').style.whiteSpace='pre-line';
+  const pct=score/10;
+  let rank,desc;
+  if(pct>=.8){rank='🌟 EMBAIXADOR(A) DO RESPEITO';desc='Uau! Você domina a arte da convivência saudável.\nO escritório fica muito melhor com pessoas como você!'}
+  else if(pct>=.5){rank='😊 PROMOVE O RESPEITO';desc='Muito bem! Você já tem ótima sensibilidade.\nAlguns ajustes e você chega na excelência!'}
+  else if(pct>=.3){rank='🤔 EM EVOLUÇÃO';desc='Você está crescendo!\nCada situação é uma oportunidade de aprender.'}
+  else{rank='💪 HORA DE REFLETIR';desc='Todo mundo começa em algum lugar.\nO importante é a vontade de melhorar!'}
+  document.getElementById('result-rank').textContent=rank+'\n\n'+desc;
   const rev=document.getElementById('result-review');rev.innerHTML='';
-  battleLog.forEach(l=>{
-    const d=document.createElement('div');d.className='review-row '+(l.ok?'ok':'bad');
-    d.textContent=(l.ok?'✅ ':'❌ ')+l.enc+': '+l.skill;rev.appendChild(d);
-  });
+  battleLog.forEach(l=>{const d=document.createElement('div');d.className='review-row '+(l.ok?'ok':'bad');d.textContent=(l.ok?'✅ ':'❌ ')+l.enc+': '+l.skill;rev.appendChild(d)});
 }
 
 function restartGame(){
   score=0;encountersTriggered=0;battleLog=[];playerPos={x:14,y:10};
-  ENCOUNTER_ZONES.forEach(z=>z.triggered=false);
-  document.getElementById('result-screen').style.display='none';
-  buildCharSelect();
-  document.getElementById('char-select').style.display='flex';
+  ENC_ZONES.forEach(z=>z.triggered=false);charData=null;selectedCity=null;
+  document.getElementById('screen-result').style.display='none';
+  showScreen('screen-city');
 }
 
-function buildCharSelect(){
-  const grid=document.getElementById('char-grid');grid.innerHTML='';
-  CHARS.forEach((c,i)=>{
-    const card=document.createElement('div');card.className='char-card';card.onclick=()=>startGame(i);
-    const canvas=document.createElement('canvas');canvas.width=10;canvas.height=16;
-    canvas.style.cssText='width:50px;height:80px;';
-    card.appendChild(canvas);
-    card.innerHTML+=`<div class="cname">${c.emoji} ${c.name}</div><div class="crole">${c.role}</div>`;
-    grid.appendChild(card);
-    drawPlayer(card.querySelector('canvas'),c.color,1);
-  });
-}
-
-function startGame(charIdx){
-  selectedChar=charIdx;
-  document.getElementById('char-select').style.display='none';
+function startGame(member){
+  charData=member;
+  showScreen(null);
   document.getElementById('statusbar').style.display='flex';
   document.getElementById('game-canvas').style.display='block';
   document.getElementById('dpad').style.display='block';
-  document.getElementById('sb-char').textContent=CHARS[charIdx].emoji+' '+CHARS[charIdx].name;
-  document.getElementById('sb-enc').textContent='◆ 0/5 encontros';
+  document.getElementById('sb-char').textContent=member.name;
+  document.getElementById('sb-enc').textContent='◆ 0/5';
   document.getElementById('sb-score').textContent='0 pts';
-  showDialog('SISTEMA',['Bem-vindo ao escritório, '+CHARS[charIdx].name+'!','Explore e encontre as 5 situações com !','Na batalha, escolha a melhor resposta para vencer.','Use WASD, ← ↑ ↓ → ou o D-pad no celular.','Boa sorte, treinador(a)!'],()=>{
-    animFrame=requestAnimationFrame(gameLoop);
-  });
+  showDialog('SISTEMA',['Bem-vindo(a), '+member.name+'!','Explore o escritório e encontre as 5 situações marcadas com !','Na batalha: leia com calma e pressione ESPAÇO para avançar.','Use WASD, setas do teclado ou o D-pad na tela. Boa sorte!'],()=>animFrame=requestAnimationFrame(gameLoop));
 }
 
-// Keyboard
-document.addEventListener('keydown',e=>{keys[e.key]=true});
-document.addEventListener('keyup',e=>{keys[e.key]=false});
-
-// D-pad touch
-function dpadPress(dir){keys[dir]=true}
-function dpadRelease(dir){keys[dir]=false}
+// ── INPUT ──────────────────────────────────────────────
+document.addEventListener('keydown',e=>keys[e.key]=true);
+document.addEventListener('keyup',e=>keys[e.key]=false);
 ['up','down','left','right'].forEach(dir=>{
-  const el=document.getElementById('dp-'+dir);
-  if(!el)return;
-  const key={'up':'ArrowUp','down':'ArrowDown','left':'ArrowLeft','right':'ArrowRight'}[dir];
-  el.addEventListener('touchstart',e=>{e.preventDefault();dpadPress(key)},{passive:false});
-  el.addEventListener('touchend',e=>{e.preventDefault();dpadRelease(key)},{passive:false});
-  el.addEventListener('mousedown',()=>dpadPress(key));
-  el.addEventListener('mouseup',()=>dpadRelease(key));
+  const el=document.getElementById('dp-'+dir);if(!el)return;
+  const k={up:'ArrowUp',down:'ArrowDown',left:'ArrowLeft',right:'ArrowRight'}[dir];
+  el.addEventListener('touchstart',e=>{e.preventDefault();keys[k]=true},{passive:false});
+  el.addEventListener('touchend',e=>{e.preventDefault();keys[k]=false},{passive:false});
+  el.addEventListener('mousedown',()=>keys[k]=true);
+  el.addEventListener('mouseup',()=>keys[k]=false);
 });
-
-// Detect mobile → show dpad hint
-if(/Mobi|Android/i.test(navigator.userAgent)){
-  document.getElementById('dpad').style.display='block';
-}
-
-// Swipe
 let tx=0,ty=0;
 document.addEventListener('touchstart',e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY},{passive:true});
 document.addEventListener('touchend',e=>{
   if(inBattle||inDialog)return;
-  const dx=e.changedTouches[0].clientX-tx,dy=e.changedTouches[0].clientY-ty,t=25;
-  if(Math.abs(dx)>Math.abs(dy)){if(dx>t)keys['ArrowRight']=true;else if(dx<-t)keys['ArrowLeft']=true}
-  else{if(dy>t)keys['ArrowDown']=true;else if(dy<-t)keys['ArrowUp']=true}
-  setTimeout(()=>{keys['ArrowRight']=keys['ArrowLeft']=keys['ArrowUp']=keys['ArrowDown']=false},150);
+  const dx=e.changedTouches[0].clientX-tx,dy=e.changedTouches[0].clientY-ty,t=28;
+  if(Math.abs(dx)>Math.abs(dy))keys[dx>t?'ArrowRight':'ArrowLeft']=true;
+  else keys[dy>t?'ArrowDown':'ArrowUp']=true;
+  setTimeout(()=>{['ArrowRight','ArrowLeft','ArrowUp','ArrowDown'].forEach(k=>keys[k]=false)},150);
 },{passive:true});
-
-// INIT
-function init(){
-  buildCharSelect();
-  document.getElementById('char-select').style.display='flex';
-}
-if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',init)}else{init()}
+if(/Mobi|Android/i.test(navigator.userAgent))document.getElementById('dpad').style.display='block';
 </script>
 </body>
 </html>
