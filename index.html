@@ -124,8 +124,8 @@ body{background:#1a1a2e;font-family:monospace;min-height:100vh;display:flex;just
 
   <div id="battle">
     <div id="battle-scene">
-      <!-- cenario-batalha: troque o src pelo caminho do seu asset -->
-      <img id="battle-bg" src="assets/cenario-batalha.png" alt="cenário batalha" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;" />
+      <!-- cenario-batalha: nome do arquivo conforme está no GitHub -->
+      <img id="battle-bg" src="cenario-batalha.png" alt="cenário batalha" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;" />
       <div id="enemy-hud">
         <div id="enemy-name">???</div>
         <div id="enemy-hp-label">HP</div>
@@ -167,21 +167,21 @@ body{background:#1a1a2e;font-family:monospace;min-height:100vh;display:flex;just
 </div>
 <script>
 // ── TEAMS — cada membro tem image: caminho do PNG do personagem ──
-// Para trocar um personagem, altere apenas o campo image: 'assets/nome-do-arquivo.png'
+// Para trocar um personagem, altere apenas o campo image: 'nome-do-arquivo.png'
 const TEAMS={
   curitiba:{label:'🌲 Curitiba',members:[
-    {name:'@Ana Moraes',    role:'Cipeira · Curitiba', image:'assets/ana-moraes.png'},
-    {name:'@Eloa',          role:'Cipeira · Curitiba', image:'assets/eloa.png'},
-    {name:'@Marcos Amancio',role:'Cipeiro · Curitiba', image:'assets/marcos-amancio.png'},
-    {name:'@Mirian Miyasawa',role:'Cipeira · Curitiba',image:'assets/mirian-miyasawa.png'},
-    {name:'@Qué Miyazaki de Paula',role:'Cipeira · Curitiba',image:'assets/que-miyazaki-de-paula.png'},
-    {name:'@Samuca',        role:'Cipeiro · Curitiba', image:'assets/samuca.png'},
-    {name:'@Thays Yamamura',role:'Cipeira · Curitiba', image:'assets/thays-yamamura.png'},
+    {name:'@Ana Moraes',    role:'Cipeira · Curitiba', image:'ana-moraes.png'},
+    {name:'@Eloa',          role:'Cipeira · Curitiba', image:'eloa.png'},
+    {name:'@Marcos Amancio',role:'Cipeiro · Curitiba', image:'marcos-amancio.png'},
+    {name:'@Mirian Miyasawa',role:'Cipeira · Curitiba',image:'mirian-miyasawa.png'},
+    {name:'@Qué Miyazaki de Paula',role:'Cipeira · Curitiba',image:'que-miyazaki-de-paula.png'},
+    {name:'@Samuca',        role:'Cipeiro · Curitiba', image:'samuca.png'},
+    {name:'@Thays Yamamura',role:'Cipeira · Curitiba', image:'thays-yamamura.png'},
   ]},
   saopaulo:{label:'🏙️ São Paulo',members:[
-    {name:'@Fer Lima',        role:'Cipeira · São Paulo',image:'assets/fer-lima.png'},
-    {name:'@Giovanna Dolence',role:'Cipeira · São Paulo',image:'assets/giovanna-dolence.png'},
-    {name:'@Rob',             role:'Cipeiro · São Paulo',image:'assets/rob.png'},
+    {name:'@Fer Lima',        role:'Cipeira · São Paulo',image:'fer-lima.png'},
+    {name:'@Giovanna Dolence',role:'Cipeira · São Paulo',image:'giovanna-dolence.png'},
+    {name:'@Rob',             role:'Cipeiro · São Paulo',image:'rob.png'},
   ]}
 };
 
@@ -276,9 +276,12 @@ function getTile(c,r){
   if((r===1&&(c===1||c===28))||(r===18&&(c===1||c===28)))return'P';
   return'F';
 }
-// cenario-escritorio: troque o caminho se necessário
+// cenario-escritorio: nome exato do arquivo no GitHub (case-sensitive!)
+// Se precisar trocar, altere aqui:
 const IMG_ESCRITORIO = new Image();
-IMG_ESCRITORIO.src = 'assets/cenario-escritorio.png';
+IMG_ESCRITORIO.src = 'cenario-escritorio.png';
+// Força re-render quando a imagem terminar de carregar
+IMG_ESCRITORIO.onload = () => { if(!inBattle && !inDialog && charData) { const cv=document.getElementById('game-canvas'); drawMap(cv.getContext('2d'),playerPos.x,playerPos.y); } };
 
 // Cache de imagens dos personagens (carregado ao selecionar cidade)
 const imgCache = {};
@@ -414,7 +417,7 @@ function showDialog(name,lines,onDone){
 }
 
 // ── BATTLE BG: usa <img id="battle-bg"> — não precisa mais de canvas ──
-// O elemento já está no HTML como <img src="assets/cenario-batalha.png">
+// O elemento já está no HTML como <img src="cenario-batalha.png">
 function drawBattleBG(){ /* substituído por <img id="battle-bg"> no HTML */ }
 
 // ── BATTLE ─────────────────────────────────────────────
