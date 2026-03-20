@@ -521,7 +521,11 @@ document.addEventListener('touchend',e=>{
 },{passive:true});
 
 // INIT
-buildCharSelect();
+function init(){
+  buildCharSelect();
+  document.getElementById('char-select').style.display='flex';
+}
+if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',init)}else{init()}
 </script>
 </body>
 </html>
