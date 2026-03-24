@@ -93,8 +93,7 @@ body{background:#1a1a2e;font-family:monospace;min-height:100vh;display:flex;just
     <h2>Você é da equipe de...</h2>
     <button class="city-btn" onclick="selectCity('curitiba')">
       <span class="city-name">🌲 CURITIBA</span>
-      <span class="city-members">@Ana Moraes · @Eloa · @Marcos Amancio · @Mirian Miyasawa<br>@Qué Miyazaki de Paula · @Samuca · @Thays Yamamura
-      @Anna Scucato · @Fernanda Marks · @Fran Erdmann · @Gabi Costa · @Gabi Rodrigues · @Gabriel da Silva Cavalcante · @Gabriel Schmidt · @Jackson Silva · @Tauane Mottin</span>
+      <span class="city-members">@Ana Moraes · @Eloa · @Marcos Amancio · @Mirian Miyasawa · @Qué Miyazaki de Paula · @Samuca · @Thays Yamamura<br>@Anna Scucato · @Fernanda Marks · @Fran Erdmann · @Gabi Costa · @Gabi Rodrigues · @Gabriel da Silva Cavalcante · @Gabriel Schmidt · @Jackson Silva · @Tauane Mottin</span>
     </button>
     <button class="city-btn" onclick="selectCity('saopaulo')">
       <span class="city-name">🏙️ SÃO PAULO</span>
@@ -167,10 +166,15 @@ body{background:#1a1a2e;font-family:monospace;min-height:100vh;display:flex;just
 
 </div>
 <script>
-// ── TEAMS — cada membro tem image: caminho do PNG do personagem ──
-// Para trocar um personagem, altere apenas o campo image: 'nome-do-arquivo.png'
 const TEAMS={
   curitiba:{label:'🌲 Curitiba',members:[
+    {name:'@Ana Moraes',                  role:'Cipeira · Curitiba', image:'ana-moraes.png'},
+    {name:'@Eloa',                        role:'Cipeira · Curitiba', image:'eloa.png'},
+    {name:'@Marcos Amancio',              role:'Cipeiro · Curitiba', image:'marcos-amancio.png'},
+    {name:'@Mirian Miyasawa',             role:'Cipeira · Curitiba', image:'mirian-miyasawa.png'},
+    {name:'@Qué Miyazaki de Paula',       role:'Cipeira · Curitiba', image:'que-miyazaki-de-paula.png'},
+    {name:'@Samuca',                      role:'Cipeiro · Curitiba', image:'samuca.png'},
+    {name:'@Thays Yamamura',              role:'Cipeira · Curitiba', image:'thays-yamamura.png'},
     {name:'@Anna Scucato',                role:'Cipeira · Curitiba', image:'anna-scucato.png'},
     {name:'@Fernanda Marks',              role:'Cipeira · Curitiba', image:'fernanda-marks.png'},
     {name:'@Fran Erdmann',                role:'Cipeira · Curitiba', image:'fran-erdmann.png'},
@@ -180,18 +184,11 @@ const TEAMS={
     {name:'@Gabriel Schmidt',             role:'Cipeiro · Curitiba', image:'gabriel-schmidt.png'},
     {name:'@Jackson Silva',               role:'Cipeiro · Curitiba', image:'jackson-silva.png'},
     {name:'@Tauane Mottin',               role:'Cipeira · Curitiba', image:'tauane-mottin.png'},
-    {name:'@Ana Moraes',    role:'Cipeira · Curitiba', image:'ana-moraes.png'},
-    {name:'@Eloa',          role:'Cipeira · Curitiba', image:'eloa.png'},
-    {name:'@Marcos Amancio',role:'Cipeiro · Curitiba', image:'marcos-amancio.png'},
-    {name:'@Mirian Miyasawa',role:'Cipeira · Curitiba',image:'mirian-miyasawa.png'},
-    {name:'@Qué Miyazaki de Paula',role:'Cipeira · Curitiba',image:'que-miyazaki-de-paula.png'},
-    {name:'@Samuca',        role:'Cipeiro · Curitiba', image:'samuca.png'},
-    {name:'@Thays Yamamura',role:'Cipeira · Curitiba', image:'thays-yamamura.png'},
   ]},
   saopaulo:{label:'🏙️ São Paulo',members:[
-    {name:'@Fer Lima',        role:'Cipeira · São Paulo',image:'fer-lima.png'},
-    {name:'@Giovanna Dolence',role:'Cipeira · São Paulo',image:'giovanna-dolence.png'},
-    {name:'@Rob',             role:'Cipeiro · São Paulo',image:'rob.png'},
+    {name:'@Fer Lima',        role:'Cipeira · São Paulo', image:'fer-lima.png'},
+    {name:'@Giovanna Dolence',role:'Cipeira · São Paulo', image:'giovanna-dolence.png'},
+    {name:'@Rob',             role:'Cipeiro · São Paulo', image:'rob.png'},
   ]}
 };
 
